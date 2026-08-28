@@ -1,0 +1,108 @@
+name: publish
+
+# Pack + publish graphics asset recipes to cvcpkg.org. Runs on catx-03 (the
+# only runner with the source data staged at /opt/cvc-wasm/scenes/). Manual
+# dispatch only — bump cvc_revision in recipe.yaml, push, then dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      recipes:
+        description: "Recipes to pack + publish (space-separated)"
+        required: true
+        default: "scene-austin-south scene-austin-south-web vehicle-humvee"
+
+concurrency:
+  group: graphics-assets-publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: [self-hosted, Linux, X64, cy-pca]  # catx-03
+    env:
+      # Source-of-truth staging tree for scenes + vehicles on catx-03.
+      # Each recipe reads its payload from a subtree here.
+      STAGE_ROOT: /opt/cvc-wasm/scenes
+      SHARED_ROOT: /opt/cvc-wasm/scenes  # sibling shared/ for vehicles
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Locate cvcpkg
+        run: |
+          export PATH="/opt/cvc-wasm/cmake-cvcpkg/bin:$HOME/.local/bin:$PATH"
+          command -v cvcpkg >/dev/null || { echo "cvcpkg not on PATH"; exit 1; }
+          echo "cvcpkg at $(command -v cvcpkg) ($(cvcpkg --version))"
+          echo "/opt/cvc-wasm/cmake-cvcpkg/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Stage payloads under a build dir
+        # Each recipe's package: files clause maps to a share/cvc-scenes/
+        # subtree. We assemble that tree from the well-known catx-03 mirror
+        # (rather than embedding assets in this repo).
+        run: |
+          set -euo pipefail
+          rm -rf stage
+          for r in ${{ inputs.recipes }}; do
+            dst=stage/$r/share/cvc-scenes
+            mkdir -p "$dst"
+            case "$r" in
+              scene-austin-south)
+                # Full bundle: everything under /opt/cvc-wasm/scenes/austin_south/
+                mkdir -p "$dst/austin_south"
+                cp -r "$STAGE_ROOT/austin_south/." "$dst/austin_south/"
+                ;;
+              scene-austin-south-web)
+                # Slim bundle: terrain + buildings + downscaled satellite + inline humvee
+                mkdir -p "$dst/austin_south"
+                cp "$STAGE_ROOT/austin_south/terrain.json"   "$dst/austin_south/"
+                cp "$STAGE_ROOT/austin_south/buildings.glb"  "$dst/austin_south/"
+                # Downscale satellite to 1024^2 if a full-res copy exists;
+                # else use whatever's staged. Requires ImageMagick's magick
+                # on the runner (already installed via cvcpkg for the cvcgl tests).
+                if command -v magick >/dev/null 2>&1 && [ -f "$STAGE_ROOT/austin_south/satellite.png" ]; then
+                  magick "$STAGE_ROOT/austin_south/satellite.png" -resize 1024x1024 -strip -quality 85 \
+                    "$dst/austin_south/satellite.png"
+                else
+                  cp "$STAGE_ROOT/austin_south/satellite.png" "$dst/austin_south/"
+                fi
+                # Inline vehicle so a single --preload-file dir wires up everything
+                cp "$SHARED_ROOT/shared/Humvee.glb" "$dst/austin_south/Humvee.glb" 2>/dev/null || true
+                ;;
+              vehicle-humvee)
+                mkdir -p "$dst/shared"
+                cp "$SHARED_ROOT/shared/Humvee.glb" "$dst/shared/Humvee.glb"
+                ;;
+              *)
+                echo "unknown recipe: $r (add a case above)"; exit 1;;
+            esac
+          done
+          echo "--- staged tree ---"
+          find stage -type f | head -20
+
+      - name: Pack + publish
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for r in ${{ inputs.recipes }}; do
+            echo "=== $r ==="
+            cvcpkg pack "$r" \
+              --recipes-dir recipes --no-default-recipes \
+              --from-prefix "stage/$r" \
+              --platform any \
+              --output-dir dist/
+          done
+          for f in dist/*.tar.gz; do
+            echo "=== publish $(basename "$f") ==="
+            cvcpkg publish "$f" --server https://cvcpkg.org
+          done
+
+      - name: Upload artifact (belt-and-braces if publish auth fails)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: graphics-asset-bundles
+          path: dist/*.tar.gz
+          if-no-files-found: warn
