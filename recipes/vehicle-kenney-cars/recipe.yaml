@@ -1,0 +1,105 @@
+schema_version: 1
+recipe:
+  name: vehicle-kenney-cars
+  upstream_version: "3.1"
+  cvc_revision: 1
+  maintainer: "cvcpkg group"
+  maintainer_email: "info@cvcpkg.org"
+  maintainer_url: "https://cvcpkg.org"
+  homepage: https://kenney.nl/assets/car-kit
+  license: CC0-1.0
+  tags: [asset, vehicle, glb, cvcgl, kenney]
+  description: >-
+    Kenney Car Kit 3.1 as glTF binaries: 50 low-poly vehicles, wheels and
+    debris pieces (sedan, suv, van, taxi, police, ambulance, firetruck,
+    garbage-truck, tractor variants, race karts, ...), ~5.5 MB total, CC0
+    (public domain; crediting Kenney is appreciated but not required). Depends
+    on nothing; installed to share/cvc-scenes/shared/kenney-cars/ next to the
+    Humvee so demos resolve them via the same sibling
+    <bundle>/../../shared/ path. Gives the nav demos a fleet of distinct,
+    real-proportion civilian vehicle bodies instead of one Humvee everywhere.
+
+source:
+  type: none
+
+patches: []
+
+depends:
+  build: []
+  runtime: []
+  host_tools: []
+
+build:
+  build_type_independent: true
+  matrix:
+    - platform: any
+      script: build.sh
+
+package:
+  files:
+    - share/cvc-scenes/shared/kenney-cars/ambulance.glb
+    - share/cvc-scenes/shared/kenney-cars/box.glb
+    - share/cvc-scenes/shared/kenney-cars/cone-flat.glb
+    - share/cvc-scenes/shared/kenney-cars/cone.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-bolt.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-bumper.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-door-window.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-door.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-drivetrain-axle.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-drivetrain.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-nut.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-plate-a.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-plate-b.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-plate-small-a.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-plate-small-b.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-spoiler-a.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-spoiler-b.glb
+    - share/cvc-scenes/shared/kenney-cars/debris-tire.glb
+    - share/cvc-scenes/shared/kenney-cars/delivery-flat.glb
+    - share/cvc-scenes/shared/kenney-cars/delivery.glb
+    - share/cvc-scenes/shared/kenney-cars/firetruck.glb
+    - share/cvc-scenes/shared/kenney-cars/garbage-truck.glb
+    - share/cvc-scenes/shared/kenney-cars/hatchback-sports.glb
+    - share/cvc-scenes/shared/kenney-cars/kart-oobi.glb
+    - share/cvc-scenes/shared/kenney-cars/kart-oodi.glb
+    - share/cvc-scenes/shared/kenney-cars/kart-ooli.glb
+    - share/cvc-scenes/shared/kenney-cars/kart-oopi.glb
+    - share/cvc-scenes/shared/kenney-cars/kart-oozi.glb
+    - share/cvc-scenes/shared/kenney-cars/police.glb
+    - share/cvc-scenes/shared/kenney-cars/race-future.glb
+    - share/cvc-scenes/shared/kenney-cars/race.glb
+    - share/cvc-scenes/shared/kenney-cars/sedan-sports.glb
+    - share/cvc-scenes/shared/kenney-cars/sedan.glb
+    - share/cvc-scenes/shared/kenney-cars/suv-luxury.glb
+    - share/cvc-scenes/shared/kenney-cars/suv.glb
+    - share/cvc-scenes/shared/kenney-cars/taxi.glb
+    - share/cvc-scenes/shared/kenney-cars/tractor-police.glb
+    - share/cvc-scenes/shared/kenney-cars/tractor-shovel.glb
+    - share/cvc-scenes/shared/kenney-cars/tractor.glb
+    - share/cvc-scenes/shared/kenney-cars/truck-flat.glb
+    - share/cvc-scenes/shared/kenney-cars/truck.glb
+    - share/cvc-scenes/shared/kenney-cars/van.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-dark.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-default.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-racing.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-tractor-back.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-tractor-dark-back.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-tractor-dark-front.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-tractor-front.glb
+    - share/cvc-scenes/shared/kenney-cars/wheel-truck.glb
+    - share/cvc-scenes/shared/kenney-cars/LICENSE.txt
+
+notes:
+  - title: "Provenance and licence"
+    platforms: [any]
+    description: >-
+      Kenney Car Kit 3.1 (kenney.nl), CC0 1.0. The bundled LICENSE.txt is
+      Kenney's own notice. Only the models/ set is shipped; the kit's duplicate
+      top-level race.glb is omitted. Packed with cvcpkg pack --from-prefix from
+      the catx-03 mirror at /opt/cvc-wasm/scenes/shared/kenney-cars/.
+  - title: "Consumers"
+    platforms: [any]
+    description: >-
+      Same install root as vehicle-humvee, so anything that already finds
+      shared/Humvee.glb via <bundle>/../../shared/ can pick a body from
+      shared/kenney-cars/<name>.glb with no new path plumbing.
