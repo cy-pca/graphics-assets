@@ -10,7 +10,7 @@ on:
       recipes:
         description: "Recipes to pack + publish (space-separated)"
         required: true
-        default: "scene-austin-south scene-austin-south-web vehicle-humvee"
+        default: "scene-austin-south scene-austin-south-web vehicle-humvee vehicle-kenney-cars"
 
 concurrency:
   group: graphics-assets-publish
@@ -115,6 +115,12 @@ jobs:
             # Plain-name installs still resolve org packages, so consumers keep
             # using `cvcpkg install scene-austin-south-web vehicle-humvee`.
             cvcpkg publish "$f" --server https://cvcpkg.org --org cvc
+          done
+          # Keep the server-side recipe rows (package pages, dependency
+          # graph) in step with this repo: push each recipe's metadata under
+          # the same org. This is an upsert; it never deletes anything.
+          for r in ${{ inputs.recipes }}; do
+            cvcpkg recipe push "$r" --recipes-dir recipes --no-default-recipes --server https://cvcpkg.org --org cvc
           done
 
       - name: Upload artifact (belt-and-braces if publish auth fails)

@@ -12,10 +12,11 @@ recipe:
   description: >-
     Downscaled downtown Austin scene bundle for wasm/browser demos —
     same footprint (±1500 metres) and same file names as
-    scene-austin-south, but stripped to the four files a nav demo needs
-    (terrain.json, buildings.glb, satellite.png) with satellite downscaled
-    so the total preload payload fits under ~15 MB. Meant to be baked into
-    a wasm module's .data file via emscripten --preload-file.
+    scene-austin-south, but stripped to the three files a nav demo needs
+    (terrain.json, buildings.glb, satellite.png), plus Humvee.glb when it
+    is staged, with satellite downscaled so the total preload payload fits
+    under ~15 MB. Meant to be baked into a wasm module's .data file via
+    emscripten --preload-file.
 
     Install this INSTEAD OF scene-austin-south for the wasm build. Same
     install path (share/cvc-scenes/austin_south/), so the demo code paths
