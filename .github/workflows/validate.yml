@@ -1,0 +1,48 @@
+name: validate
+
+# Schema + script validation of every recipe under recipes/ with the same
+# validator libcvc-deps runs on its own tree. The cvcpkg pin must contain
+# libcvc-deps#550 (schema accepts source.type: none, which every data-only
+# recipe here uses); bump it deliberately, not to a floating branch.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cvcpkg (pinned to libcvc-deps master with #550)
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet "git+https://github.com/transfix/libcvc-deps@917a3973"
+          cvcpkg --version
+
+      - name: Validate recipes
+        run: cvcpkg validate --recipes-dir recipes --no-default-recipes recipes
+
+      - name: Shell-check the guard scripts
+        run: |
+          set -e
+          for f in recipes/*/build.sh; do bash -n "$f" && echo "ok: $f"; done
+
+      - name: Every recipe has a publish.yml case
+        run: |
+          set -e
+          for d in recipes/*/; do
+            r=$(basename "$d")
+            grep -qE "^\s+${r}\)" .github/workflows/publish.yml \
+              || { echo "::error::publish.yml has no case for ${r}"; exit 1; }
+          done
+          echo "all recipes have a publish case"
