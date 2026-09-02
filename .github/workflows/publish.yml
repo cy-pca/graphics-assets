@@ -111,7 +111,10 @@ jobs:
           done
           for f in dist/*.tar.gz; do
             echo "=== publish $(basename "$f") ==="
-            cvcpkg publish "$f" --server https://cvcpkg.org
+            # Under the cvc organisation, like everything libcvc publishes.
+            # Plain-name installs still resolve org packages, so consumers keep
+            # using `cvcpkg install scene-austin-south-web vehicle-humvee`.
+            cvcpkg publish "$f" --server https://cvcpkg.org --org cvc
           done
 
       - name: Upload artifact (belt-and-braces if publish auth fails)
