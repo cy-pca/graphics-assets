@@ -21,7 +21,9 @@ permissions:
 
 jobs:
   publish:
-    runs-on: [self-hosted, Linux, X64, cy-pca]  # catx-03
+    # catx-03. The org runner carries only [self-hosted, Linux, X64]; an extra
+    # label here never matches, so the job queues until GitHub auto-cancels it.
+    runs-on: [self-hosted, Linux, X64]
     env:
       # Source-of-truth staging tree for scenes + vehicles on catx-03.
       # Each recipe reads its payload from a subtree here.
