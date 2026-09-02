@@ -90,8 +90,16 @@ jobs:
           find stage -type f | head -20
 
       - name: Pack + publish
+        # Token resolution: a CVCPKG_PUBLISHER_TOKEN repo/org secret wins; when
+        # it is unset the empty env var is dropped so cvcpkg falls back to the
+        # runner's own ~/.config/cvcpkg/env. Without either, pack succeeds and
+        # publish fails with "--token is required" (the artifact below is the
+        # belt-and-braces copy for a manual publish).
+        env:
+          CVCPKG_TOKEN: ${{ secrets.CVCPKG_PUBLISHER_TOKEN }}
         run: |
           set -euo pipefail
+          [ -n "${CVCPKG_TOKEN:-}" ] || unset CVCPKG_TOKEN
           mkdir -p dist
           for r in ${{ inputs.recipes }}; do
             echo "=== $r ==="
