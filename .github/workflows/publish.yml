@@ -75,6 +75,11 @@ jobs:
                 mkdir -p "$dst/shared"
                 cp "$SHARED_ROOT/shared/Humvee.glb" "$dst/shared/Humvee.glb"
                 ;;
+              vehicle-kenney-cars)
+                # Kenney Car Kit 3.1 (CC0): the whole models/ set + LICENSE.txt
+                mkdir -p "$dst/shared/kenney-cars"
+                cp -r "$SHARED_ROOT/shared/kenney-cars/." "$dst/shared/kenney-cars/"
+                ;;
               *)
                 echo "unknown recipe: $r (add a case above)"; exit 1;;
             esac
