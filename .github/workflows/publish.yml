@@ -125,16 +125,17 @@ jobs:
           done
           for f in dist/*.tar.gz; do
             echo "=== publish $(basename "$f") ==="
-            # Under the cvc organisation, like everything libcvc publishes.
+            # Under the cy-pca organisation: cy-pca credentials are scoped to it
+            # and are not members of cvc.
             # Plain-name installs still resolve org packages, so consumers keep
             # using `cvcpkg install scene-austin-south-web vehicle-humvee`.
-            cvcpkg publish "$f" --server https://cvcpkg.org --org cvc
+            cvcpkg publish "$f" --server https://cvcpkg.org --org cy-pca
           done
           # Keep the server-side recipe rows (package pages, dependency
           # graph) in step with this repo: push each recipe's metadata under
           # the same org. This is an upsert; it never deletes anything.
           for r in ${{ inputs.recipes }}; do
-            cvcpkg recipe push "$r" --recipes-dir recipes --no-default-recipes --server https://cvcpkg.org --org cvc
+            cvcpkg recipe push "$r" --recipes-dir recipes --no-default-recipes --server https://cvcpkg.org --org cy-pca
           done
 
       - name: Upload artifact (belt-and-braces if publish auth fails)
