@@ -87,7 +87,7 @@ jobs:
             esac
           done
           echo "--- staged tree ---"
-          find stage -type f | head -20
+          find stage -type f | sed -n '1,20p'
 
       - name: Pack + publish
         # Token resolution: a CVCPKG_PUBLISHER_TOKEN repo/org secret wins; when
