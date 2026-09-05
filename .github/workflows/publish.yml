@@ -64,11 +64,25 @@ jobs:
                 # Downscale satellite to 1024^2 if a full-res copy exists;
                 # else use whatever's staged. Requires ImageMagick's magick
                 # on the runner (already installed via cvcpkg for the cvcgl tests).
-                if command -v magick >/dev/null 2>&1 && [ -f "$STAGE_ROOT/austin_south/satellite.png" ]; then
-                  magick "$STAGE_ROOT/austin_south/satellite.png" -resize 1024x1024 -strip -quality 85 \
-                    "$dst/austin_south/satellite.png"
-                else
-                  cp "$STAGE_ROOT/austin_south/satellite.png" "$dst/austin_south/"
+                # Downscale the satellite to fit 1024x1024 (the web bundle is an
+                # emscripten --preload-file payload; the full 21 MB PNG makes it
+                # ~29 MB instead of ~10 MB). Neither runner has ImageMagick, so
+                # use magick when present and fall back to Pillow in a venv.
+                if [ -f "$STAGE_ROOT/austin_south/satellite.png" ]; then
+                  if command -v magick >/dev/null 2>&1; then
+                    magick "$STAGE_ROOT/austin_south/satellite.png" -resize 1024x1024 -strip -quality 85 "$dst/austin_south/satellite.png"
+                  else
+                    V="$HOME/.cache/cvcpkg/pil-venv"
+                    if [ ! -x "$V/bin/python" ]; then python3 -m venv "$V" && "$V/bin/pip" install -q pillow; fi
+                    "$V/bin/python" - "$STAGE_ROOT/austin_south/satellite.png" "$dst/austin_south/satellite.png" <<'PY'
+          import sys
+          from PIL import Image
+          im = Image.open(sys.argv[1])
+          im.thumbnail((1024, 1024), Image.LANCZOS)
+          im.save(sys.argv[2], format="PNG", optimize=True)
+          print("satellite downscaled to", im.size)
+          PY
+                  fi
                 fi
                 # Inline vehicle so a single --preload-file dir wires up everything
                 cp "$SHARED_ROOT/shared/Humvee.glb" "$dst/austin_south/Humvee.glb" 2>/dev/null || true
