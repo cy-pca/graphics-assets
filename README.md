@@ -2,13 +2,13 @@
 
 Cvcpkg recipes for graphics/scene/vehicle asset bundles used by cvcgl demos
 (scene bundles, textured vehicle models, and future terrain/prop packs).
-Publishes to [cvcpkg.org](https://cvcpkg.org) under the `cvc` organisation
+Publishes to [cvcpkg.org](https://cvcpkg.org) under the `cy-pca` organisation
 via the on-demand `publish` GitHub Action, which runs on the cy-pca
 self-hosted `catx-03` runner (the only host with the source data staged at
 `/opt/cvc-wasm/scenes/`). The publishing identity is the repository secret
-`CVCPKG_PUBLISHER_TOKEN`, which must be a member of the `cvc` org on
-cvcpkg.org (`cvcpkg org add-member cvc --name <token-name>`); the runner
-itself holds no credentials.
+`CVCPKG_PUBLISHER_TOKEN`, an owner of the `cy-pca` org on cvcpkg.org. cy-pca credentials are
+scoped to that org only (never members of `cvc`); the runner itself holds no
+credentials.
 
 This repository is the single home for asset recipes. `transfix/libcvc-deps`
 no longer carries copies.
@@ -24,8 +24,8 @@ no longer carries copies.
 The `publish` workflow (see `.github/workflows/publish.yml`) is manual
 dispatch only. It stages each recipe's payload from the well-known
 `/opt/cvc-wasm/scenes/` mirror on catx-03, runs `cvcpkg pack
---from-prefix`, publishes the bundle to cvcpkg.org with `--org cvc`, and
-pushes the recipe metadata (`cvcpkg recipe push --org cvc`) so the package
+--from-prefix`, publishes the bundle to cvcpkg.org with `--org cy-pca`, and
+pushes the recipe metadata (`cvcpkg recipe push --org cy-pca`) so the package
 pages track this repo. To publish a new revision of an existing package,
 bump `cvc_revision` in its `recipe.yaml`, push, then dispatch `publish`
 with that recipe name. The server rejects a name/version/variant that is
@@ -67,4 +67,4 @@ installed (uncompressed) payload.
    name to the workflow's `recipes` input default. The workflow refuses
    names it has no case for.
 4. Dispatch the `publish` workflow with your recipe name; it packs from
-   the staged tree and publishes to cvcpkg.org under `cvc`.
+   the staged tree and publishes to cvcpkg.org under `cy-pca`.
